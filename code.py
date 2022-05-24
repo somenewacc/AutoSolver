@@ -78,87 +78,87 @@ class Solver:
                 print(f'w(R(x)) = {bin(tmp).count("1")} > t')
                 if (self.shiftcounter != len(self.notE)):
                     print(f"Сдвигаем ~E на {self.shiftcounter} {'вправо' if self.rightshift else 'влево'}:")
-        if (self.shiftcounter != len(self.notE)):
-            print("Ошибка найдена!")
-            print(f"Потребовалось сдвигов: {self.shiftcounter}")
-            print("\nИсправляем ошибку:")
-            self.E = int(noteEtmp, 2) ^ tmp
-            self.E = str(bin(self.E))[2:]
-            while(len(self.E) != len(self.notE)):
-                self.E = "0" + self.E
-            print(f"{noteEtmp} xor {str(bin(tmp))[2:]} = {self.E}")
-            if (self.shiftcounter > 0):
-                print(f"\nСдвигаем {'влево' if self.rightshift else 'вправо'} на {self.shiftcounter}:")
-                for _ in range(self.shiftcounter):
-                    self.E = self.E[1:] + self.E[:1] if self.rightshift else self.E[len(self.E) - 1:] + self.E[:len(self.E) - 1]
-            print(f"Исходный E: {self.E}")
-            rev = self.E[:-len(self.F) + 1]
-            rev = rev[::-1]
-            print(f"И: {rev}, в десятичном виде: {int(rev, 2)}")
-            tmpstr = bin(tmp)
-            tmpstr = tmpstr[2:]
-            while (len(tmpstr) != len(self.notE)):
-                tmpstr = "0" + tmpstr
+        if (self.shiftcounter == len(self.notE)):
+            print("\nОшибку найти не удалось!")
+            return
+        print("Ошибка найдена!")
+        print(f"Потребовалось сдвигов: {self.shiftcounter}")
+        print("\nИсправляем ошибку:")
+        self.E = int(noteEtmp, 2) ^ tmp
+        self.E = str(bin(self.E))[2:]
+        while(len(self.E) != len(self.notE)):
+            self.E = "0" + self.E
+        print(f"{noteEtmp} xor {str(bin(tmp))[2:]} = {self.E}")
+        if (self.shiftcounter > 0):
+            print(f"\nСдвигаем {'влево' if self.rightshift else 'вправо'} на {self.shiftcounter}:")
             for _ in range(self.shiftcounter):
-                tmpstr = tmpstr[1:] + tmpstr[:1] if self.rightshift else tmpstr[len(tmpstr) - 1:] + tmpstr[:len(tmpstr) - 1]
-            errvec = tmpstr
-            errvec = errvec[errvec.find("1"):]
-            print(f"Вектор e: {errvec}, в восьмеричном виде: {oct(int(errvec, 2))}")
-            print("\nПроверим найденное число И:")
-            print("Посчитаем образующую матрицу:")
-            genmat_divident = "1"
-            while (len(genmat_divident) != len(self.notE)):
-                genmat_divident += "0"
-            tmp, remainder = self.div(divident = genmat_divident, divider = self.F)
-            tranones = "1"
-            while (len(tranones) != len(self.notE) - len(self.F) + 1):
-                tranones = "0" + tranones
+                self.E = self.E[1:] + self.E[:1] if self.rightshift else self.E[len(self.E) - 1:] + self.E[:len(self.E) - 1]
+        print(f"Исходный E: {self.E}")
+        rev = self.E[:-len(self.F) + 1]
+        rev = rev[::-1]
+        print(f"И: {rev}, в десятичном виде: {int(rev, 2)}")
+        tmpstr = bin(tmp)
+        tmpstr = tmpstr[2:]
+        while (len(tmpstr) != len(self.notE)):
+            tmpstr = "0" + tmpstr
+        for _ in range(self.shiftcounter):
+            tmpstr = tmpstr[1:] + tmpstr[:1] if self.rightshift else tmpstr[len(tmpstr) - 1:] + tmpstr[:len(tmpstr) - 1]
+        errvec = tmpstr
+        errvec = errvec[errvec.find("1"):]
+        print(f"Вектор e: {errvec}, в восьмеричном виде: {oct(int(errvec, 2))}")
+        print("\nПроверим найденное число И:")
+        print("Посчитаем образующую матрицу:")
+        genmat_divident = "1"
+        while (len(genmat_divident) != len(self.notE)):
+            genmat_divident += "0"
+        tmp, remainder = self.div(divident = genmat_divident, divider = self.F)
+        tranones = "1"
+        while (len(tranones) != len(self.notE) - len(self.F) + 1):
+            tranones = "0" + tranones
+        for r in remainder:
+            rstr = str(bin(r))[2:]
+            while (len(rstr) != len(self.F) - 1):
+                rstr = "0" + rstr
+            print(f"{tranones} | {rstr}")
+            tranones = tranones[1:] + tranones[:1]
+        print("\nВычисляем b:")
+        bcounter = 0
+        acounter = 0
+        bArr = []
+        while (len(bArr) != len(self.F) - 1):
+            bArr.append(0)
+        bcolumn = []
+        while (len(bcolumn) != len(self.F) - 1):
+            bcolumn.append("")
+        for b in bArr:
             for r in remainder:
                 rstr = str(bin(r))[2:]
                 while (len(rstr) != len(self.F) - 1):
                     rstr = "0" + rstr
-                print(f"{tranones} | {rstr}")
-                tranones = tranones[1:] + tranones[:1]
-            print("\nВычисляем b:")
-            bcounter = 0
+                bcolumn[bcounter] = bcolumn[bcounter] + rstr[bcounter]
+                if (int(bcolumn[bcounter][acounter]) & 1 == 1):
+                    b ^= int(rev[acounter])
+                acounter += 1
+            bArr[bcounter] = b
+            bcounter += 1
             acounter = 0
-            bArr = []
-            while (len(bArr) != len(self.F) - 1):
-                bArr.append(0)
-            bcolumn = []
-            while (len(bcolumn) != len(self.F) - 1):
-                bcolumn.append("")
-            for b in bArr:
-                for r in remainder:
-                    rstr = str(bin(r))[2:]
-                    while (len(rstr) != len(self.F) - 1):
-                        rstr = "0" + rstr
-                    bcolumn[bcounter] = bcolumn[bcounter] + rstr[bcounter]
-                    if (int(bcolumn[bcounter][acounter]) & 1 == 1):
-                        b ^= int(rev[acounter])
-                    acounter += 1
-                bArr[bcounter] = b
-                bcounter += 1
-                acounter = 0
-                print(f"b{bcounter} = {b}")
-            E1 = rev[::-1]
-            for b in bArr:
-                E1 = E1 + str(b)
-            notE1 = int(E1, 2) ^ int(errvec, 2)
-            notE1 = str(bin(notE1))[2:]
-            while (len(notE1) != len(self.notE)):
-                notE1 = "0" + notE1
-            print(f"\nE1 = {E1}")
-            print(f"Добавляем ошибку:")
-            print(f"{E1} xor {errvec} = {notE1}")
-            print(f"~E1 = {notE1}")
-            print(f"~E  = {self.notE}")
-            if (notE1 == self.notE):
-                print("~E1 равен ~E, ответ верный.")
-            else:
-                print("Ой-ой...")
+            print(f"b{bcounter} = {b}")
+        E1 = rev[::-1]
+        for b in bArr:
+            E1 = E1 + str(b)
+        notE1 = int(E1, 2) ^ int(errvec, 2)
+        notE1 = str(bin(notE1))[2:]
+        while (len(notE1) != len(self.notE)):
+            notE1 = "0" + notE1
+        print(f"\nE1 = {E1}")
+        print(f"Добавляем ошибку:")
+        print(f"{E1} xor {errvec} = {notE1}")
+        print(f"~E1 = {notE1}")
+        print(f"~E  = {self.notE}")
+        if (notE1 == self.notE):
+            print("~E1 равен ~E, ответ верный.")
         else:
-            print("\nОшибку найти не удалось!")
+            print("Ой-ой...")
 
 def main(argv):
     solver = Solver()
